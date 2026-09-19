@@ -452,7 +452,52 @@ app.get("/api/symbols", async (req, res, next) => {
 });
 
 app.get("/api/provider/status", (req, res) => {
-  res.json({ provider: "stock-nse-india", status: "available", cacheEnabled: true, dailyBudget: budget.status() });
+  res.json({
+    provider: "stock-nse-india",
+    status: "available",
+    cacheEnabled: true,
+    dailyBudget: budget.status()
+  });
+});
+
+// --- NSE DEBUG ---
+app.get("/debug-nse", async (req, res) => {
+  const started = Date.now();
+
+  try {
+    console.log("[DEBUG] Calling NSE for TCS...");
+
+    const result = await nse.getEquityDetails("TCS");
+
+    console.log(
+      `[DEBUG] NSE succeeded in ${Date.now() - started}ms`
+    );
+
+    res.json({
+      ok: true,
+      status: 200,
+      elapsedMs: Date.now() - started,
+      result
+    });
+
+  } catch (err) {
+    console.error("[DEBUG] NSE ERROR:", {
+      message: err?.message,
+      status: err?.response?.status ?? err?.status ?? null,
+      statusText: err?.response?.statusText ?? null,
+      data: err?.response?.data ?? null,
+      code: err?.code ?? null
+    });
+
+    res.status(500).json({
+      ok: false,
+      message: err?.message ?? "Unknown error",
+      status: err?.response?.status ?? err?.status ?? null,
+      statusText: err?.response?.statusText ?? null,
+      response: err?.response?.data ?? null,
+      code: err?.code ?? null
+    });
+  }
 });
 
 // --- Frontend (embedded, base64-decoded at startup) ---
