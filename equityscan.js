@@ -460,40 +460,22 @@ app.get("/api/provider/status", (req, res) => {
   });
 });
 
-// --- NSE DEBUG ---
 app.get("/debug-nse", async (req, res) => {
-  const started = Date.now();
-
   try {
-    console.log("[DEBUG] Calling NSE for TCS...");
-
     const result = await nse.getEquityDetails("TCS");
-
-    console.log(
-      `[DEBUG] NSE succeeded in ${Date.now() - started}ms`
-    );
 
     res.json({
       ok: true,
       status: 200,
-      elapsedMs: Date.now() - started,
       result
     });
-
   } catch (err) {
-    console.error("[DEBUG] NSE ERROR:", {
-      message: err?.message,
-      status: err?.response?.status ?? err?.status ?? null,
-      statusText: err?.response?.statusText ?? null,
-      data: err?.response?.data ?? null,
-      code: err?.code ?? null
-    });
+    console.error("NSE DEBUG ERROR:", err);
 
     res.status(500).json({
       ok: false,
-      message: err?.message ?? "Unknown error",
+      message: err?.message || "Unknown error",
       status: err?.response?.status ?? err?.status ?? null,
-      statusText: err?.response?.statusText ?? null,
       response: err?.response?.data ?? null,
       code: err?.code ?? null
     });
