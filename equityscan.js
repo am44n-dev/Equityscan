@@ -970,6 +970,31 @@ app.get(/^(?!\/api).*/, (req, res) => {
 app.use("/api", (req, res, next) => next(Errors.notFound(`No route for ${req.method} ${req.originalUrl}`)));
 app.use(errorMiddleware);
 
+
+app.get("/debug-nse", async (req, res) => {
+  try {
+    const result = await nse.getEquityDetails("TCS");
+    res.json({ ok: true, status: 200, result });
+  } catch (err) {
+    console.error("NSE ERROR:", {
+      message: err.message,
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      data: err.response?.data,
+      code: err.code,
+      stack: err.stack,
+    });
+    res.status(500).json({
+      ok: false,
+      message: err.message,
+      status: err.response?.status ?? null,
+      statusText: err.response?.statusText ?? null,
+      response: err.response?.data ?? null,
+      code: err.code ?? null,
+    });
+  }
+});
+
 app.listen(config.port, () => {
   console.log(`[EquityScan] running at http://localhost:${config.port}`);
   console.log(`[EquityScan] daily call budget: ${config.dailyCallBudget}, cache TTL: ${config.quoteCacheTtl}ms`);
